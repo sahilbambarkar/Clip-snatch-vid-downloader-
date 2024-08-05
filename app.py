@@ -21,17 +21,24 @@ def download():
     output_path = os.path.join('downloads', f'{video_id}.mp4')
 
     ydl_opts = {
-        'format': 'best',
-        'outtmpl': output_path,
-    }
+    'format': 'best[ext=mp4]',
+    'outtmpl': output_path,
+    'quiet': True,
+}
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([video_url])
 
         return send_file(output_path, as_attachment=True, download_name=f'{video_id}.mp4')
+    except yt_dlp.utils.DownloadError as e:
+        error_message = f"DownloadError: {str(e)}"
+        print(error_message)
+        return jsonify({'error': error_message}), 500
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        error_message = f"Unexpected error: {str(e)}"
+        print(error_message)
+        return jsonify({'error': error_message}), 500
 
 if __name__ == '__main__':
     if not os.path.exists('downloads'):
